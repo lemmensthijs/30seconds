@@ -25,6 +25,7 @@
       width: 100%;
       max-width: 480px;
       padding: 16px;
+      position: relative;
     }
 
     .title {
@@ -199,7 +200,7 @@
 
     .controls {
       display: flex;
-      gap: 12px;
+      gap: 8px;
       margin-top: 8px;
       flex-wrap: wrap;
       justify-content: center;
@@ -208,8 +209,8 @@
     button {
       border: none;
       border-radius: 999px;
-      padding: 12px 20px;
-      font-size: 1rem;
+      padding: 12px 14px;
+      font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
       transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
@@ -227,15 +228,29 @@
     .word-btn {
       background: linear-gradient(135deg, #42a5f5, #1e88e5);
       color: #fff;
-      flex: 1 1 55%;
-      min-width: 140px;
+      flex: 1 1 40%;
+      min-width: 110px;
     }
 
     .new-btn {
       background: linear-gradient(135deg, #66bb6a, #43a047);
       color: #fff;
-      flex: 1 1 35%;
-      min-width: 120px;
+      flex: 1 1 25%;
+      min-width: 90px;
+    }
+
+    .time-btn {
+      background: linear-gradient(135deg, #ab47bc, #8e24aa);
+      color: #fff;
+      flex: 1 1 20%;
+      min-width: 80px;
+    }
+
+    .help-btn {
+      background: linear-gradient(135deg, #ffca28, #ffa000);
+      color: #222;
+      flex: 1 1 20%;
+      min-width: 80px;
     }
 
     .settings {
@@ -261,6 +276,105 @@
       font-size: 0.8rem;
       color: #666;
       margin-top: 4px;
+    }
+
+    /* Overlays */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+    }
+
+    .overlay-content {
+      background: #181818;
+      border-radius: 18px;
+      padding: 20px 16px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
+    }
+
+    .overlay-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .overlay-text {
+      font-size: 0.9rem;
+      color: #ddd;
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    .overlay-list {
+      font-size: 0.9rem;
+      color: #ccc;
+      margin-bottom: 16px;
+    }
+
+    .overlay-list li {
+      margin-left: 18px;
+      margin-bottom: 4px;
+    }
+
+    .overlay-footer {
+      display: flex;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .back-btn {
+      background: linear-gradient(135deg, #42a5f5, #1e88e5);
+      color: #fff;
+      padding: 10px 22px;
+      border-radius: 999px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .back-btn:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    /* Tijdkeuze specifiek */
+    .time-options {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      margin-bottom: 12px;
+    }
+
+    .time-option-btn {
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      border: 1px solid #555;
+      background: #222;
+      color: #ddd;
+      cursor: pointer;
+    }
+
+    .time-option-btn.selected {
+      background: #ab47bc;
+      border-color: #e1bee7;
+      color: #fff;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .current-time-label {
+      font-size: 0.85rem;
+      color: #bbb;
+      text-align: center;
     }
 
     @media (max-width: 360px) {
@@ -316,6 +430,8 @@
     <div class="controls">
       <button id="wordBtn" class="word-btn">Woord</button>
       <button id="newBtn" class="new-btn">Nieuw woord</button>
+      <button id="timeBtn" class="time-btn">Tijd</button>
+      <button id="helpBtn" class="help-btn">Uitleg</button>
     </div>
 
     <div class="settings">
@@ -328,62 +444,127 @@
       </div>
     </div>
   </div>
+
+  <!-- Uitleg overlay -->
+  <div id="helpOverlay" class="overlay">
+    <div class="overlay-content">
+      <div class="overlay-title">Uitleg van het spel</div>
+      <p class="overlay-text">
+        EHBO 30 Seconds speel je met minimaal twee spelers. Eén speler ziet het woord op het scherm, de andere speler moet het woord raden.
+      </p>
+      <ul class="overlay-list">
+        <li>Druk op de knop Woord en houd deze ingedrukt om het woord en de verboden woorden te zien.</li>
+        <li>Zodra je de knop loslaat, gaat de tijd lopen en heb je dertig seconden (of de ingestelde tijd) om het woord te omschrijven.</li>
+        <li>Je mag de verboden woorden niet gebruiken, omdat die vertellen hoe het letsel is ontstaan.</li>
+        <li>De andere speler ziet de verboden woorden pas als de tijd voorbij is.</li>
+      </ul>
+      <div class="overlay-footer">
+        <button id="backBtn" class="back-btn">Terug</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tijd overlay -->
+  <div id="timeOverlay" class="overlay">
+    <div class="overlay-content">
+      <div class="overlay-title">Kies de tijd per ronde</div>
+      <p class="overlay-text">
+        Kies hoeveel seconden een speler krijgt om het woord te omschrijven.
+      </p>
+      <div class="time-options">
+        <button class="time-option-btn" data-seconds="10">10 s</button>
+        <button class="time-option-btn" data-seconds="15">15 s</button>
+        <button class="time-option-btn" data-seconds="20">20 s</button>
+        <button class="time-option-btn" data-seconds="25">25 s</button>
+        <button class="time-option-btn" data-seconds="30">30 s</button>
+      </div>
+      <div id="currentTimeLabel" class="current-time-label">
+        Huidige tijd per ronde: 30 s
+      </div>
+      <div class="overlay-footer">
+        <button id="timeBackBtn" class="back-btn">Terug</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-const WORDS = [
-  { term: "Bewustzijn", taboo: [] },
-  { term: "Ademhaling", taboo: [] },
-  { term: "112 bellen", taboo: [] },
-  { term: "Eigen veiligheid", taboo: [] },
-  { term: "Stabiele zijligging", taboo: [] },
-  { term: "Reanimatie", taboo: [] },
-  { term: "AED", taboo: [] },
-  { term: "Verslikking", taboo: ["snel eten", "snel drinken", "stukje eten in de keel"] },
-  { term: "Buikstoten", taboo: [] },
-  { term: "Bloedneus", taboo: ["klap op de neus", "in de neus peuteren", "hard snuiten"] },
-  { term: "Flauwvallen", taboo: ["lang stilstaan", "weinig eten", "spannende situatie"] },
-  { term: "Hoofdwond", taboo: ["val op het hoofd", "botsing tegen iets hards", "klap tegen het hoofd"] },
-  { term: "Schaafwond", taboo: ["vallen op straat", "over de grond schuiven", "glijden over een ruwe ondergrond"] },
-  { term: "Snijwond", taboo: ["mes", "glas", "scherp voorwerp"] },
-  { term: "Brandwond", taboo: ["vuur", "hete vloeistof", "hete pan", "elektriciteit", "chemisch middel"] },
-  { term: "Blaar", taboo: ["nieuwe schoenen", "lange wandeling", "wrijving"] },
-  { term: "Botbreuk", taboo: ["val", "auto-ongeluk", "sportongeval"] },
-  { term: "Kneuzing", taboo: ["stoten tegen iets", "vallen", "botsing"] },
-  { term: "Verstuiking", taboo: ["enkel verzwikken", "verkeerd neerkomen", "voet omklappen"] },
-  { term: "Ontwrichting", taboo: ["hard vallen op arm of schouder", "hard trekken aan een gewricht", "sportongeval"] },
-  { term: "Nekletsel", taboo: ["auto-ongeluk", "duiken in ondiep water", "val van hoogte"] },
-  { term: "Allergie", taboo: ["pinda's", "noten", "insectensteek", "bepaalde medicijnen"] },
-  { term: "Anafylaxie", taboo: ["pinda's", "noten", "wespensteek", "penicilline"] },
-  { term: "Epilepsie", taboo: ["knipperend licht", "flikkerende beelden", "slaaptekort"] },
-  { term: "Hypo", taboo: ["te veel insuline", "te weinig eten", "zware inspanning"] },
-  { term: "Hyper", taboo: ["te weinig insuline", "veel eten", "insuline vergeten"] },
-  { term: "Hyperventilatie", taboo: ["stress", "paniek", "heftige schrik"] },
-  { term: "Shock", taboo: ["groot bloedverlies", "ernstig ongeluk", "zware allergische reactie"] },
-  { term: "Onderkoeling", taboo: ["lang in koud water", "dunne kleding in de kou", "nat worden in de kou"] },
-  { term: "Oververhitting", taboo: ["lang in de zon", "hittegolf", "zware inspanning in de warmte"] },
-  { term: "Vergiftiging", taboo: ["schoonmaakmiddel drinken", "te veel medicijnen innemen", "giftige dampen inademen"] },
-  { term: "Brandgevaar", taboo: ["kaarsen laten branden", "stekkerdoos overbelasten", "pan op het vuur vergeten"] },
-  { term: "Bloedverlies", taboo: ["grote wond maken", "snijden met een mes", "ongeval met scherp voorwerp"] },
-  { term: "Drukverband", taboo: [] },
-  { term: "Wondsnelverband", taboo: [] },
-  { term: "Ideaalverband", taboo: [] },
-  { term: "Niet-verklevend kompres", taboo: [] },
-  { term: "Zwachtel", taboo: [] },
-  { term: "Mitella", taboo: [] },
-  { term: "Handschoenen", taboo: [] },
-  { term: "Spoelen met water", taboo: [] },
-  { term: "Koelen", taboo: [] },
-  { term: "Afdekken", taboo: [] },
-  { term: "Pijn", taboo: [] },
-  { term: "Misselijkheid", taboo: [] },
-  { term: "Duizeligheid", taboo: [] },
-  { term: "Bewusteloos", taboo: ["harde klap op het hoofd", "gebrek aan zuurstof", "zware botsing"] },
-  { term: "Geruststellen", taboo: [] }
-];
+  const WORDS = [
+    { term: "Bewustzijn", taboo: [] },
+    { term: "Ademhaling", taboo: [] },
+    { term: "112 bellen", taboo: [] },
+    { term: "Eigen veiligheid", taboo: [] },
+    { term: "Stabiele zijligging", taboo: [] },
+    { term: "Reanimatie", taboo: [] },
+    { term: "AED", taboo: [] },
 
+    { term: "Verslikking", taboo: ["snel eten", "snel drinken", "stukje eten in de keel"] },
+    { term: "Buikstoten", taboo: [] },
 
-  const ROUND_DURATION = 30;
+    { term: "Bloedneus", taboo: ["klap op de neus", "in de neus peuteren", "hard snuiten"] },
+    { term: "Flauwvallen", taboo: ["lang stilstaan", "weinig eten", "spannende situatie"] },
+
+    { term: "Hoofdwond", taboo: ["val op het hoofd", "botsing tegen iets hards", "klap tegen het hoofd"] },
+    { term: "Schaafwond", taboo: ["vallen op straat", "over de grond schuiven", "glijden over een ruwe ondergrond"] },
+    { term: "Snijwond", taboo: ["mes", "glas", "scherp voorwerp"] },
+
+    { term: "Brandwond", taboo: ["vuur", "hete vloeistof", "hete pan", "elektriciteit", "chemisch middel"] },
+    { term: "Blaar", taboo: ["nieuwe schoenen", "lange wandeling", "wrijving"] },
+
+    { term: "Botbreuk", taboo: ["val", "auto-ongeluk", "sportongeval"] },
+    { term: "Kneuzing", taboo: ["stoten tegen iets", "vallen", "botsing"] },
+    { term: "Verstuiking", taboo: ["enkel verzwikken", "verkeerd neerkomen", "voet omklappen"] },
+    { term: "Ontwrichting", taboo: ["hard vallen op arm of schouder", "hard trekken aan een gewricht", "sportongeval"] },
+
+    { term: "Nekletsel", taboo: ["auto-ongeluk", "duiken in ondiep water", "val van hoogte"] },
+
+    { term: "Allergie", taboo: ["pinda's", "noten", "insectensteek", "bepaalde medicijnen"] },
+    { term: "Anafylaxie", taboo: ["pinda's", "noten", "wespensteek", "penicilline"] },
+
+    { term: "Epilepsie", taboo: ["knipperend licht", "flikkerende beelden", "slaaptekort"] },
+
+    { term: "Hypo", taboo: ["te veel insuline", "te weinig eten", "zware inspanning"] },
+    { term: "Hyper", taboo: ["te weinig insuline", "veel eten", "insuline vergeten"] },
+
+    { term: "Hyperventilatie", taboo: ["stress", "paniek", "heftige schrik"] },
+
+    { term: "Shock", taboo: ["groot bloedverlies", "ernstig ongeluk", "zware allergische reactie"] },
+
+    { term: "Onderkoeling", taboo: ["lang in koud water", "dunne kleding in de kou", "nat worden in de kou"] },
+    { term: "Oververhitting", taboo: ["lang in de zon", "hittegolf", "zware inspanning in de warmte"] },
+
+    { term: "Vergiftiging", taboo: ["schoonmaakmiddel drinken", "te veel medicijnen innemen", "giftige dampen inademen"] },
+    { term: "Brandgevaar", taboo: ["kaarsen laten branden", "stekkerdoos overbelasten", "pan op het vuur vergeten"] },
+
+    { term: "Bloedverlies", taboo: ["grote wond maken", "snijden met een mes", "ongeval met scherp voorwerp"] },
+
+    { term: "Drukverband", taboo: [] },
+    { term: "Wondsnelverband", taboo: [] },
+    { term: "Ideaalverband", taboo: [] },
+    { term: "Niet-verklevend kompres", taboo: [] },
+    { term: "Zwachtel", taboo: [] },
+    { term: "Mitella", taboo: [] },
+    { term: "Handschoenen", taboo: [] },
+
+    { term: "Spoelen met water", taboo: [] },
+    { term: "Koelen", taboo: [] },
+    { term: "Afdekken", taboo: [] },
+
+    { term: "Pijn", taboo: [] },
+    { term: "Misselijkheid", taboo: [] },
+    { term: "Duizeligheid", taboo: [] },
+    { term: "Bewusteloos", taboo: ["harde klap op het hoofd", "gebrek aan zuurstof", "zware botsing"] },
+
+    { term: "Geruststellen", taboo: [] }
+  ];
+
+  let roundDuration = 30;  // instelbare tijd per ronde
+  let currentIndex = null;
+  let timer = null;
+  let remaining = roundDuration;
+  let roundActive = false;
+  let wordPrimedThisRound = false;
+  let lastOrientationStart = 0;
 
   const wordTextEl = document.getElementById("wordText");
   const placeholderEl = document.getElementById("placeholder");
@@ -393,16 +574,17 @@ const WORDS = [
   const statusTextEl = document.getElementById("statusText");
   const wordBtn = document.getElementById("wordBtn");
   const newBtn = document.getElementById("newBtn");
+  const helpBtn = document.getElementById("helpBtn");
+  const timeBtn = document.getElementById("timeBtn");
+  const helpOverlay = document.getElementById("helpOverlay");
+  const backBtn = document.getElementById("backBtn");
+  const timeOverlay = document.getElementById("timeOverlay");
+  const timeBackBtn = document.getElementById("timeBackBtn");
   const tiltStartToggle = document.getElementById("tiltStartToggle");
   const sandTopInner = document.getElementById("sandTopInner");
   const sandBottomInner = document.getElementById("sandBottomInner");
-
-  let currentIndex = null;
-  let timer = null;
-  let remaining = ROUND_DURATION;
-  let roundActive = false;
-  let wordPrimedThisRound = false;
-  let lastOrientationStart = 0;
+  const currentTimeLabel = document.getElementById("currentTimeLabel");
+  const timeOptionButtons = document.querySelectorAll(".time-option-btn");
 
   function playPling() {
     try {
@@ -422,7 +604,7 @@ const WORDS = [
       osc.start();
       osc.stop(ctx.currentTime + 1.0);
     } catch (e) {
-      // als audio niet mag, dan stil falen
+      // geluid faalt stil
     }
   }
 
@@ -441,9 +623,34 @@ const WORDS = [
     return idx;
   }
 
+  function updateTimerDisplay() {
+    timerDisplayEl.textContent = remaining.toFixed(1);
+  }
+
+  function resetSand() {
+    sandTopInner.style.transform = "scaleY(1)";
+    sandBottomInner.style.transform = "scaleY(0)";
+  }
+
+  function updateSand() {
+    const fraction = remaining / roundDuration;
+    const topScale = Math.max(fraction, 0);
+    const bottomScale = Math.min(1 - fraction, 1);
+    sandTopInner.style.transform = "scaleY(" + topScale + ")";
+    sandBottomInner.style.transform = "scaleY(" + bottomScale + ")";
+  }
+
+  function stopTimer() {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+    roundActive = false;
+  }
+
   function setNewWord() {
     currentIndex = pickRandomIndex();
-    remaining = ROUND_DURATION;
+    remaining = roundDuration;
     updateTimerDisplay();
     resetSand();
     stopTimer();
@@ -479,32 +686,14 @@ const WORDS = [
   function hideCurrentWord() {
     wordTextEl.style.display = "none";
     placeholderEl.style.display = "block";
-    // tijdens het aftellen mogen de verboden woorden niet zichtbaar zijn
     tabooWrapperEl.style.display = "none";
-  }
-
-  function updateTimerDisplay() {
-    timerDisplayEl.textContent = remaining.toFixed(1);
-  }
-
-  function resetSand() {
-    sandTopInner.style.transform = "scaleY(1)";
-    sandBottomInner.style.transform = "scaleY(0)";
-  }
-
-  function updateSand() {
-    const fraction = remaining / ROUND_DURATION;
-    const topScale = Math.max(fraction, 0);
-    const bottomScale = Math.min(1 - fraction, 1);
-    sandTopInner.style.transform = "scaleY(" + topScale + ")";
-    sandBottomInner.style.transform = "scaleY(" + bottomScale + ")";
   }
 
   function startTimer() {
     if (roundActive) return;
     if (currentIndex === null) return;
     if (remaining <= 0) {
-      remaining = ROUND_DURATION;
+      remaining = roundDuration;
       updateTimerDisplay();
       resetSand();
     }
@@ -534,7 +723,6 @@ const WORDS = [
         roundActive = false;
         statusTextEl.textContent = "Tijd voorbij.";
 
-        // Na 0.0: woord en verboden woorden weer tonen
         const entry = WORDS[currentIndex];
         if (entry) {
           wordTextEl.textContent = entry.term;
@@ -551,14 +739,6 @@ const WORDS = [
     }, 100);
   }
 
-  function stopTimer() {
-    if (timer) {
-      clearInterval(timer);
-      timer = null;
-    }
-    roundActive = false;
-  }
-
   function onWordPressStart(evt) {
     evt.preventDefault();
     showCurrentWord();
@@ -569,7 +749,7 @@ const WORDS = [
     hideCurrentWord();
     if (!wordPrimedThisRound) {
       wordPrimedThisRound = true;
-      remaining = ROUND_DURATION;
+      remaining = roundDuration;
       updateTimerDisplay();
       resetSand();
       startTimer();
@@ -591,8 +771,59 @@ const WORDS = [
     setNewWord();
   });
 
-  setNewWord();
+  // Uitleg overlay
+  helpBtn.addEventListener("click", () => {
+    helpOverlay.style.display = "flex";
+  });
 
+  backBtn.addEventListener("click", () => {
+    helpOverlay.style.display = "none";
+  });
+
+  // Tijd overlay
+  function updateTimeButtonsSelection() {
+    timeOptionButtons.forEach(btn => {
+      const val = Number(btn.dataset.seconds);
+      if (val === roundDuration) {
+        btn.classList.add("selected");
+      } else {
+        btn.classList.remove("selected");
+      }
+    });
+    currentTimeLabel.textContent = "Huidige tijd per ronde: " + roundDuration + " s";
+  }
+
+  timeBtn.addEventListener("click", () => {
+    updateTimeButtonsSelection();
+    timeOverlay.style.display = "flex";
+  });
+
+  timeBackBtn.addEventListener("click", () => {
+    timeOverlay.style.display = "none";
+  });
+
+  timeOptionButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const val = Number(btn.dataset.seconds);
+      if (!isNaN(val)) {
+        roundDuration = val;
+        remaining = roundDuration;
+        updateTimerDisplay();
+        resetSand();
+        stopTimer();
+        wordPrimedThisRound = false;
+        statusTextEl.textContent = "Tijd ingesteld op " + roundDuration + " seconden.";
+        updateTimeButtonsSelection();
+      }
+    });
+  });
+
+  // Eerste woord klaarzetten
+  setNewWord();
+  updateTimerDisplay();
+  updateTimeButtonsSelection();
+
+  // Plat op tafel starten
   function handleOrientation(event) {
     if (!tiltStartToggle.checked) return;
     if (roundActive) return;
@@ -622,8 +853,7 @@ const WORDS = [
               window.addEventListener("deviceorientation", handleOrientation);
             }
           })
-          .catch(() => {
-          });
+          .catch(() => {});
         document.body.removeEventListener("click", askPermissionOnce);
       });
     } else {
