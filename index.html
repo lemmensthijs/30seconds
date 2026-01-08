@@ -278,7 +278,6 @@
       margin-top: 4px;
     }
 
-    /* Overlays */
     .overlay {
       position: absolute;
       inset: 0;
@@ -344,7 +343,6 @@
       transform: translateY(1px) scale(0.98);
     }
 
-    /* Tijdkeuze specifiek */
     .time-options {
       display: flex;
       justify-content: center;
@@ -454,9 +452,9 @@
       </p>
       <ul class="overlay-list">
         <li>Druk op de knop Woord en houd deze ingedrukt om het woord en de verboden woorden te zien.</li>
-        <li>Zodra je de knop loslaat, gaat de tijd lopen en heb je dertig seconden (of de ingestelde tijd) om het woord te omschrijven.</li>
+        <li>Zodra je de knop loslaat, gaat de tijd lopen en heb je de ingestelde tijd om het woord te omschrijven.</li>
         <li>Je mag de verboden woorden niet gebruiken, omdat die vertellen hoe het letsel is ontstaan.</li>
-        <li>De andere speler ziet de verboden woorden pas als de tijd voorbij is.</li>
+        <li>De andere speler ziet de verboden woorden niet tijdens het raden.</li>
       </ul>
       <div class="overlay-footer">
         <button id="backBtn" class="back-btn">Terug</button>
@@ -558,7 +556,7 @@
     { term: "Geruststellen", taboo: [] }
   ];
 
-  let roundDuration = 30;  // instelbare tijd per ronde
+  let roundDuration = 30;
   let currentIndex = null;
   let timer = null;
   let remaining = roundDuration;
@@ -604,7 +602,7 @@
       osc.start();
       osc.stop(ctx.currentTime + 1.0);
     } catch (e) {
-      // geluid faalt stil
+      // stil als audio niet kan
     }
   }
 
@@ -721,20 +719,13 @@
         updateTimerDisplay();
         updateSand();
         roundActive = false;
+        wordPrimedThisRound = false;
         statusTextEl.textContent = "Tijd voorbij.";
 
-        const entry = WORDS[currentIndex];
-        if (entry) {
-          wordTextEl.textContent = entry.term;
-          wordTextEl.style.display = "block";
-          placeholderEl.style.display = "none";
-          if (entry.taboo && entry.taboo.length > 0) {
-            tabooListEl.textContent = entry.taboo.join(" · ");
-            tabooWrapperEl.style.display = "block";
-          }
-        }
-
         playPling();
+
+        // Direct een nieuw woord klaarzetten onder de knop "Woord"
+        setNewWord();
       }
     }, 100);
   }
