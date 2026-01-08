@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>EHBO 30 Seconds</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: #000;
+      color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+      padding: 16px;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: #111;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+    }
+
+    .word-display {
+      min-height: 80px;
+      border-radius: 12px;
+      border: 1px solid #333;
+      background: radial-gradient(circle at top, #222 0, #111 60%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .word-text {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .placeholder {
+      font-size: 0.95rem;
+      color: #666;
+    }
+
+    .taboo-title {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 6px;
+    }
+
+    .taboo-list {
+      font-size: 0.85rem;
+      color: #ffb74d;
+      margin-top: 2px;
+    }
+
+    .timer-section {
+      margin-top: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .timer-display {
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .status-text {
+      font-size: 0.85rem;
+      color: #999;
+    }
+
+    /* Zandloper container */
+    .hourglass-container {
+      width: 80px;
+      height: 140px;
+      position: relative;
+    }
+
+    /* Zandloper vorm */
+    .hourglass-frame {
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      border: 2px solid #555;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .hourglass-shape {
+      width: 40px;
+      height: 100px;
+      position: relative;
+    }
+
+    .triangle-top,
+    .triangle-bottom {
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      position: absolute;
+      left: 0;
+    }
+
+    .triangle-top {
+      border-bottom: 45px solid #555;
+      top: 0;
+    }
+
+    .triangle-bottom {
+      border-top: 45px solid #555;
+      bottom: 0;
+    }
+
+    /* Zand vulling (wordt via JS geschaald) */
+    .sand-fill {
+      position: absolute;
+      left: 4px;
+      right: 4px;
+      top: 4px;
+      bottom: 4px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .sand-top,
+    .sand-bottom {
+      width: 100%;
+      transform-origin: center;
+    }
+
+    .sand-top {
+      height: 45%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+    }
+
+    .sand-bottom {
+      height: 45%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .sand-top-inner,
+    .sand-bottom-inner {
+      width: 0;
+      height: 0;
+      border-left: 16px solid transparent;
+      border-right: 16px solid transparent;
+    }
+
+    .sand-top-inner {
+      border-bottom: 40px solid #ffca28;
+      transform-origin: bottom center;
+    }
+
+    .sand-bottom-inner {
+      border-top: 40px solid #ffca28;
+      transform-origin: top center;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      filter: brightness(0.95);
+    }
+
+    .word-btn {
+      background: linear-gradient(135deg, #42a5f5, #1e88e5);
+      color: #fff;
+      flex: 1 1 55%;
+      min-width: 140px;
+    }
+
+    .new-btn {
+      background: linear-gradient(135deg, #66bb6a, #43a047);
+      color: #fff;
+      flex: 1 1 35%;
+      min-width: 120px;
+    }
+
+    .settings {
+      margin-top: 14px;
+      font-size: 0.8rem;
+      color: #888;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .settings label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .settings input[type="checkbox"] {
+      accent-color: #42a5f5;
+    }
+
+    .tip {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 360px) {
+      .word-text {
+        font-size: 1.4rem;
+      }
+      .timer-display {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="title">EHBO 30 Seconds</div>
+  <div class="subtitle">Houd "Woord" ingedrukt om het woord te zien. Loslaten start de tijd.</div>
+
+  <div class="card">
+    <div class="word-display">
+      <div id="wordText" class="word-text" style="display:none;"></div>
+      <div id="placeholder" class="placeholder">
+        Druk op "Woord" om het eerste woord klaar te zetten.
+      </div>
+      <div id="tabooWrapper" style="display:none;">
+        <div class="taboo-title">Deze woorden mag je niet zeggen:</div>
+        <div id="tabooList" class="taboo-list"></div>
+      </div>
+    </div>
+
+    <div class="timer-section">
+      <div id="timerDisplay" class="timer-display">30</div>
+      <div id="statusText" class="status-text">Klaar voor de volgende ronde.</div>
+
+      <div class="hourglass-container">
+        <div class="hourglass-frame">
+          <div class="hourglass-shape">
+            <div class="triangle-top"></div>
+            <div class="triangle-bottom"></div>
+            <div class="sand-fill">
+              <div class="sand-top">
+                <div id="sandTopInner" class="sand-top-inner"></div>
+              </div>
+              <div class="sand-bottom">
+                <div id="sandBottomInner" class="sand-bottom-inner"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="controls">
+      <button id="wordBtn" class="word-btn">Woord</button>
+      <button id="newBtn" class="new-btn">Nieuw woord</button>
+    </div>
+
+    <div class="settings">
+      <label>
+        <input type="checkbox" id="tiltStartToggle" checked>
+        Timer mag ook starten als telefoon plat op tafel ligt.
+      </label>
+      <div class="tip">
+        Voor de plat-lig functie is op sommige telefoons een toestemming voor bewegingssensoren nodig.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Woorden en verboden woorden
+  const WORDS = [
+    { term: "Bewustzijn", taboo: ["wakker", "slapen", "bij zijn"] },
+    { term: "Ademhaling", taboo: ["adem", "inademen", "uitademen"] },
+    { term: "112 bellen", taboo: ["alarmnummer", "politie", "ambulance"] },
+    { term: "Eigen veiligheid", taboo: ["gevaar", "veilig", "omgeving"] },
+    { term: "Stabiele zijligging", taboo: ["opzij", "op de zij", "bewusteloos"] },
+    { term: "Reanimatie", taboo: ["borstcompressies", "beademing", "hartmassage"] },
+    { term: "AED", taboo: ["shock", "kastje", "reanimatie"] },
+    { term: "Verslikking", taboo: ["eten", "stikken", "keel"] },
+    { term: "Buikstoten", taboo: ["Heimlich", "buik", "stoten"] },
+    { term: "Bloedneus", taboo: ["neus", "bloeden", "voorover"] },
+    { term: "Flauwvallen", taboo: ["duizelig", "wegvallen", "bewusteloos"] },
+    { term: "Hoofdwond", taboo: ["hoofd", "schedel", "bloed"] },
+    { term: "Schaafwond", taboo: ["huid", "schuren", "oppervlakkig"] },
+    { term: "Snijwond", taboo: ["mes", "snijden", "scherp"] },
+    { term: "Brandwond", taboo: ["verbranden", "heet", "hitte"] },
+    { term: "Blaar", taboo: ["wandelen", "schoen", "vocht"] },
+    { term: "Botbreuk", taboo: ["gebroken", "gips", "bot"] },
+    { term: "Kneuzing", taboo: ["blauwe plek", "stoot", "pijn"] },
+    { term: "Verstuiking", taboo: ["enkels", "omklappen", "banden"] },
+    { term: "Ontwrichting", taboo: ["uit de kom", "schouder", "gewricht"] },
+    { term: "Nekletsel", taboo: ["hals", "wervel", "onbeweeglijk"] },
+    { term: "Allergie", taboo: ["overgevoelig", "bultjes", "jeuk"] },
+    { term: "Anafylaxie", taboo: ["ernstige allergie", "dichte keel", "pen"] },
+    { term: "Epilepsie", taboo: ["aanval", "schokken", "toeval"] },
+    { term: "Hypo", taboo: ["lage suiker", "diabetes", "trillen"] },
+    { term: "Hyper", taboo: ["hoge suiker", "diabetes", "dorst"] },
+    { term: "Hyperventilatie", taboo: ["te snel ademen", "zakje", "paniek"] },
+    { term: "Shock", taboo: ["bleek", "koude huid", "lage bloeddruk"] },
+    { term: "Onderkoeling", taboo: ["koud", "laag", "temperatuur"] },
+    { term: "Oververhitting", taboo: ["hitte", "te warm", "uitdroging"] },
+    { term: "Vergiftiging", taboo: ["gif", "inslikken", "medicijnen"] },
+    { term: "Brandgevaar", taboo: ["vlammen", "rook", "vuur"] },
+    { term: "Bloedverlies", taboo: ["bloeden", "wond", "verband"] },
+    { term: "Drukverband", taboo: ["stevig", "drukken", "rollen"] },
+    { term: "Wondsnelverband", taboo: ["kant en klaar", "opplakken", "verbanddoos"] },
+    { term: "Ideaalverband", taboo: ["elastisch", "steun", "zwachtel"] },
+    { term: "Niet-verklevend kompres", taboo: ["plakt niet", "gaas", "wond"] },
+    { term: "Zwachtel", taboo: ["inrollen", "omwikkelen", "steun"] },
+    { term: "Mitella", taboo: ["doek", "arm", "dragen"] },
+    { term: "Handschoenen", taboo: ["beschermen", "latex", "infectie"] },
+    { term: "Spoelen met water", taboo: ["kraan", "afwassen", "koelen"] },
+    { term: "Koelen", taboo: ["koud water", "brandwond", "15 minuten"] },
+    { term: "Afdekken", taboo: ["afsluiten", "verband", "beschermen"] },
+    { term: "Pijn", taboo: ["au", "ongemak", "klacht"] },
+    { term: "Misselijkheid", taboo: ["overgeven", "buik", "naar zijn"] },
+    { term: "Duizeligheid", taboo: ["wankel", "draaiend", "evenwicht"] },
+    { term: "Bewusteloos", taboo: ["reageren", "wakker maken", "liggen"] },
+    { term: "Geruststellen", taboo: ["kalmeren", "rustig praten", "angst"] }
+  ];
+
+  const ROUND_DURATION = 30; // seconden
+
+  const wordTextEl = document.getElementById("wordText");
+  const placeholderEl = document.getElementById("placeholder");
+  const tabooWrapperEl = document.getElementById("tabooWrapper");
+  const tabooListEl = document.getElementById("tabooList");
+  const timerDisplayEl = document.getElementById("timerDisplay");
+  const statusTextEl = document.getElementById("statusText");
+  const wordBtn = document.getElementById("wordBtn");
+  const newBtn = document.getElementById("newBtn");
+  const tiltStartToggle = document.getElementById("tiltStartToggle");
+  const sandTopInner = document.getElementById("sandTopInner");
+  const sandBottomInner = document.getElementById("sandBottomInner");
+
+  let currentIndex = null;
+  let timer = null;
+  let remaining = ROUND_DURATION;
+  let roundActive = false;
+  let wordPrimedThisRound = false; // of het woord al onthuld is voor deze ronde
+  let lastOrientationStart = 0;
+
+  // Web Audio voor pling geluid
+  function playPling() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = 1200;
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.45);
+    } catch (e) {
+      // stil falen als audio niet mag
+    }
+  }
+
+  function pickRandomIndex() {
+    if (WORDS.length === 0) return null;
+    if (currentIndex === null) {
+      return Math.floor(Math.random() * WORDS.length);
+    }
+    if (WORDS.length === 1) {
+      return 0;
+    }
+    let idx;
+    do {
+      idx = Math.floor(Math.random() * WORDS.length);
+    } while (idx === currentIndex);
+    return idx;
+  }
+
+  function setNewWord() {
+    currentIndex = pickRandomIndex();
+    remaining = ROUND_DURATION;
+    updateTimerDisplay();
+    resetSand();
+    stopTimer();
+    roundActive = false;
+    wordPrimedThisRound = false;
+
+    if (currentIndex !== null) {
+      placeholderEl.textContent = "Houd \"Woord\" ingedrukt om het woord te zien.";
+      wordTextEl.style.display = "none";
+      tabooWrapperEl.style.display = "none";
+      statusTextEl.textContent = "Nieuw woord klaargezet. Je kunt starten.";
+    } else {
+      placeholderEl.textContent = "Geen woorden beschikbaar.";
+      statusTextEl.textContent = "";
+    }
+  }
+
+  function showCurrentWord() {
+    if (currentIndex === null) {
+      setNewWord();
+    }
+    const entry = WORDS[currentIndex];
+    wordTextEl.textContent = entry.term;
+    wordTextEl.style.display = "block";
+    placeholderEl.style.display = "none";
+
+    if (entry.taboo && entry.taboo.length > 0) {
+      tabooListEl.textContent = entry.taboo.join(" · ");
+      tabooWrapperEl.style.display = "block";
+    } else {
+      tabooWrapperEl.style.display = "none";
+    }
+  }
+
+  function hideCurrentWord() {
+    wordTextEl.style.display = "none";
+    placeholderEl.style.display = "block";
+  }
+
+  function updateTimerDisplay() {
+    timerDisplayEl.textContent = remaining.toString().padStart(2, "0");
+  }
+
+  function resetSand() {
+    // boven vol, onder leeg
+    sandTopInner.style.transform = "scaleY(1)";
+    sandBottomInner.style.transform = "scaleY(0)";
+  }
+
+  function updateSand() {
+    const fraction = remaining / ROUND_DURATION;
+    const topScale = Math.max(fraction, 0);
+    const bottomScale = Math.min(1 - fraction, 1);
+    sandTopInner.style.transform = "scaleY(" + topScale + ")";
+    sandBottomInner.style.transform = "scaleY(" + bottomScale + ")";
+  }
+
+  function startTimer() {
+    if (roundActive) return;
+    if (currentIndex === null) return;
+    if (remaining <= 0) {
+      remaining = ROUND_DURATION;
+      updateTimerDisplay();
+      resetSand();
+    }
+
+    roundActive = true;
+    statusTextEl.textContent = "Bezig... omschrijf zo veel mogelijk.";
+    const startTime = Date.now();
+    const startRemaining = remaining;
+
+    if (timer) {
+      clearInterval(timer);
+    }
+
+    timer = setInterval(() => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      const newRemaining = Math.max(0, startRemaining - elapsed);
+      remaining = newRemaining;
+      updateTimerDisplay();
+      updateSand();
+
+      if (remaining <= 0.05) {
+        clearInterval(timer);
+        timer = null;
+        remaining = 0;
+        updateTimerDisplay();
+        updateSand();
+        roundActive = false;
+        statusTextEl.textContent = "Tijd voorbij.";
+        playPling();
+      }
+    }, 100);
+  }
+
+  function stopTimer() {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+    roundActive = false;
+  }
+
+  // Event handlers knoppen
+  function onWordPressStart(evt) {
+    evt.preventDefault();
+    showCurrentWord();
+  }
+
+  function onWordPressEnd(evt) {
+    evt.preventDefault();
+    hideCurrentWord();
+    if (!wordPrimedThisRound) {
+      wordPrimedThisRound = true;
+      remaining = ROUND_DURATION;
+      updateTimerDisplay();
+      resetSand();
+      startTimer();
+    }
+  }
+
+  wordBtn.addEventListener("mousedown", onWordPressStart);
+  wordBtn.addEventListener("touchstart", onWordPressStart, { passive: false });
+
+  wordBtn.addEventListener("mouseup", onWordPressEnd);
+  wordBtn.addEventListener("mouseleave", (evt) => {
+    if (evt.buttons === 0) return;
+    onWordPressEnd(evt);
+  });
+  wordBtn.addEventListener("touchend", onWordPressEnd);
+  wordBtn.addEventListener("touchcancel", onWordPressEnd);
+
+  newBtn.addEventListener("click", () => {
+    setNewWord();
+  });
+
+  // Zorgen dat er direct een eerste woord klaarstaat
+  setNewWord();
+
+  // Plat op tafel starten
+  function handleOrientation(event) {
+    if (!tiltStartToggle.checked) return;
+    if (roundActive) return;
+    if (!wordPrimedThisRound) return;
+
+    const beta = event.beta;   // kantelen voor/achter
+    const gamma = event.gamma; // kantelen links/rechts
+
+    if (beta == null || gamma == null) return;
+
+    const now = Date.now();
+    if (now - lastOrientationStart < 1500) return; // niet te vaak na elkaar
+
+    // eenvoudige check of de telefoon redelijk vlak ligt
+    const flatEnough = Math.abs(beta) < 15 && Math.abs(gamma) < 15;
+
+    if (flatEnough) {
+      lastOrientationStart = now;
+      startTimer();
+    }
+  }
+
+  if (window.DeviceOrientationEvent) {
+    // Sommige browsers vereisen expliciete toestemming
+    if (typeof DeviceOrientationEvent.requestPermission === "function") {
+      // Gebruik een tik op de pagina om permissie te vragen
+      document.body.addEventListener("click", function askPermissionOnce() {
+        DeviceOrientationEvent.requestPermission()
+          .then((response) => {
+            if (response === "granted") {
+              window.addEventListener("deviceorientation", handleOrientation);
+            }
+          })
+          .catch(() => {
+            // Geen toestemming, dan geen plat-lig functie
+          });
+        document.body.removeEventListener("click", askPermissionOnce);
+      });
+    } else {
+      window.addEventListener("deviceorientation", handleOrientation);
+    }
+  }
+</script>
+</body>
+</html>
