@@ -105,14 +105,12 @@
       color: #999;
     }
 
-    /* Zandloper container */
     .hourglass-container {
       width: 80px;
       height: 140px;
       position: relative;
     }
 
-    /* Zandloper vorm */
     .hourglass-frame {
       position: absolute;
       inset: 0;
@@ -149,7 +147,6 @@
       bottom: 0;
     }
 
-    /* Zand vulling (wordt via JS geschaald) */
     .sand-fill {
       position: absolute;
       left: 4px;
@@ -294,7 +291,7 @@
     </div>
 
     <div class="timer-section">
-      <div id="timerDisplay" class="timer-display">30</div>
+      <div id="timerDisplay" class="timer-display">30.0</div>
       <div id="statusText" class="status-text">Klaar voor de volgende ronde.</div>
 
       <div class="hourglass-container">
@@ -334,7 +331,6 @@
 </div>
 
 <script>
-  // Woorden en verboden woorden
   const WORDS = [
     { term: "Bewustzijn", taboo: ["wakker", "slapen", "bij zijn"] },
     { term: "Ademhaling", taboo: ["adem", "inademen", "uitademen"] },
@@ -354,7 +350,7 @@
     { term: "Blaar", taboo: ["wandelen", "schoen", "vocht"] },
     { term: "Botbreuk", taboo: ["gebroken", "gips", "bot"] },
     { term: "Kneuzing", taboo: ["blauwe plek", "stoot", "pijn"] },
-    { term: "Verstuiking", taboo: ["enkels", "omklappen", "banden"] },
+    { term: "Verstuiking", taboo: ["enkel", "omklappen", "banden"] },
     { term: "Ontwrichting", taboo: ["uit de kom", "schouder", "gewricht"] },
     { term: "Nekletsel", taboo: ["hals", "wervel", "onbeweeglijk"] },
     { term: "Allergie", taboo: ["overgevoelig", "bultjes", "jeuk"] },
@@ -386,7 +382,7 @@
     { term: "Geruststellen", taboo: ["kalmeren", "rustig praten", "angst"] }
   ];
 
-  const ROUND_DURATION = 30; // seconden
+  const ROUND_DURATION = 30;
 
   const wordTextEl = document.getElementById("wordText");
   const placeholderEl = document.getElementById("placeholder");
@@ -404,26 +400,28 @@
   let timer = null;
   let remaining = ROUND_DURATION;
   let roundActive = false;
-  let wordPrimedThisRound = false; // of het woord al onthuld is voor deze ronde
+  let wordPrimedThisRound = false;
   let lastOrientationStart = 0;
 
-  // Web Audio voor pling geluid
   function playPling() {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
+
       osc.type = "sine";
       osc.frequency.value = 1200;
+
       gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+      gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.9);
+
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
-      osc.stop(ctx.currentTime + 0.45);
+      osc.stop(ctx.currentTime + 1.0);
     } catch (e) {
-      // stil falen als audio niet mag
+      // als audio niet mag, dan stil falen
     }
   }
 
@@ -451,15 +449,11 @@
     roundActive = false;
     wordPrimedThisRound = false;
 
-    if (currentIndex !== null) {
-      placeholderEl.textContent = "Houd \"Woord\" ingedrukt om het woord te zien.";
-      wordTextEl.style.display = "none";
-      tabooWrapperEl.style.display = "none";
-      statusTextEl.textContent = "Nieuw woord klaargezet. Je kunt starten.";
-    } else {
-      placeholderEl.textContent = "Geen woorden beschikbaar.";
-      statusTextEl.textContent = "";
-    }
+    tabooWrapperEl.style.display = "none";
+    wordTextEl.style.display = "none";
+    placeholderEl.style.display = "block";
+    placeholderEl.textContent = "Houd \"Woord\" ingedrukt om het woord te zien.";
+    statusTextEl.textContent = "Nieuw woord klaargezet. Je kunt starten.";
   }
 
   function showCurrentWord() {
@@ -467,6 +461,8 @@
       setNewWord();
     }
     const entry = WORDS[currentIndex];
+    if (!entry) return;
+
     wordTextEl.textContent = entry.term;
     wordTextEl.style.display = "block";
     placeholderEl.style.display = "none";
@@ -482,14 +478,15 @@
   function hideCurrentWord() {
     wordTextEl.style.display = "none";
     placeholderEl.style.display = "block";
+    // tijdens het aftellen mogen de verboden woorden niet zichtbaar zijn
+    tabooWrapperEl.style.display = "none";
   }
 
   function updateTimerDisplay() {
-    timerDisplayEl.textContent = remaining.toString().padStart(2, "0");
+    timerDisplayEl.textContent = remaining.toFixed(1);
   }
 
   function resetSand() {
-    // boven vol, onder leeg
     sandTopInner.style.transform = "scaleY(1)";
     sandBottomInner.style.transform = "scaleY(0)";
   }
@@ -535,6 +532,19 @@
         updateSand();
         roundActive = false;
         statusTextEl.textContent = "Tijd voorbij.";
+
+        // Na 0.0: woord en verboden woorden weer tonen
+        const entry = WORDS[currentIndex];
+        if (entry) {
+          wordTextEl.textContent = entry.term;
+          wordTextEl.style.display = "block";
+          placeholderEl.style.display = "none";
+          if (entry.taboo && entry.taboo.length > 0) {
+            tabooListEl.textContent = entry.taboo.join(" · ");
+            tabooWrapperEl.style.display = "block";
+          }
+        }
+
         playPling();
       }
     }, 100);
@@ -548,7 +558,6 @@
     roundActive = false;
   }
 
-  // Event handlers knoppen
   function onWordPressStart(evt) {
     evt.preventDefault();
     showCurrentWord();
@@ -581,24 +590,20 @@
     setNewWord();
   });
 
-  // Zorgen dat er direct een eerste woord klaarstaat
   setNewWord();
 
-  // Plat op tafel starten
   function handleOrientation(event) {
     if (!tiltStartToggle.checked) return;
     if (roundActive) return;
     if (!wordPrimedThisRound) return;
 
-    const beta = event.beta;   // kantelen voor/achter
-    const gamma = event.gamma; // kantelen links/rechts
-
+    const beta = event.beta;
+    const gamma = event.gamma;
     if (beta == null || gamma == null) return;
 
     const now = Date.now();
-    if (now - lastOrientationStart < 1500) return; // niet te vaak na elkaar
+    if (now - lastOrientationStart < 1500) return;
 
-    // eenvoudige check of de telefoon redelijk vlak ligt
     const flatEnough = Math.abs(beta) < 15 && Math.abs(gamma) < 15;
 
     if (flatEnough) {
@@ -608,9 +613,7 @@
   }
 
   if (window.DeviceOrientationEvent) {
-    // Sommige browsers vereisen expliciete toestemming
     if (typeof DeviceOrientationEvent.requestPermission === "function") {
-      // Gebruik een tik op de pagina om permissie te vragen
       document.body.addEventListener("click", function askPermissionOnce() {
         DeviceOrientationEvent.requestPermission()
           .then((response) => {
@@ -619,7 +622,6 @@
             }
           })
           .catch(() => {
-            // Geen toestemming, dan geen plat-lig functie
           });
         document.body.removeEventListener("click", askPermissionOnce);
       });
